@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { useMemo, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Bubble } from './Bubble';
 import { useFrame } from '@react-three/fiber';
 
@@ -15,8 +15,10 @@ type BubblesProps = {
 
 export const Bubbles = ({ nodes, selectedNodeId, setSelectedNodeId }: BubblesProps) => {
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  void hoveredNodeId;
 
   useFrame((state, delta) => {
+    void state;
     const simulationSteps = 5;
     const substepDelta = delta / simulationSteps;
 
