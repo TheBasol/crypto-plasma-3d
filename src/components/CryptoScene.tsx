@@ -26,12 +26,12 @@ const CameraAnimator = ({ selectedNodeId, nodes, controlsRef, isInteracting, isC
     if (isInteracting || !isCameraLocked || !controlsRef.current) return;
     const node = nodes.find((n: any) => n.id === selectedNodeId);
 
-    const defaultZ = viewport.aspect < 1 ? 45 : 30;
+    const defaultZ = viewport.aspect < 1 ? 60 : 30;
     
     if (node) {
       const aspect = viewport.aspect;
       const isMobileScreen = size.width <= 768 || aspect < 1; 
-      const screenMultiplier = isMobileScreen ? 0.8 : 1.0; 
+      const screenMultiplier = isMobileScreen ? 1.0 : 1.0; 
 
       const baseFactor = 6; 
       const zoomOffset = Math.max(6, node.radius * baseFactor * screenMultiplier);
@@ -92,7 +92,7 @@ export const CryptoScene = ({
           enablePan
           enableRotate={true}
           minDistance={10}
-          maxDistance={60} 
+          maxDistance={150} 
           makeDefault 
           onStart={() => {
             setIsInteracting(true);

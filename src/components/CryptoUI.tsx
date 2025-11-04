@@ -61,7 +61,7 @@ if (isMobile) {
         
         <div className="flex flex-col gap-7">
           <div className="space-y-2">
-            <label className={labelClass}>🔍 Buscar Criptomoneda</label>
+            <label className={labelClass}>Buscar Criptomoneda</label>
             <form onSubmit={handleSubmit} className="flex w-full gap-0">
               <input
                 type="text"
@@ -82,7 +82,7 @@ if (isMobile) {
           </div>
           
           <div className="space-y-2">
-            <label className={labelClass}>📊 Tamaño de Burbujas</label>
+            <label className={labelClass}>Tamaño de Burbujas</label>
             <div className={selectWrapperClass}>
               <select 
                 value={metric} 
@@ -101,7 +101,7 @@ if (isMobile) {
           </div>
           
           <div className="space-y-2">
-            <label className={labelClass}>⏱️ Período de Tiempo</label>
+            <label className={labelClass}>Período de Tiempo</label>
             <div className={selectWrapperClass}>
               <select 
                 value={timeframe} 

@@ -18,35 +18,44 @@ export const Bubbles = ({ nodes, selectedNodeId, setSelectedNodeId }: BubblesPro
   void hoveredNodeId;
 
   useFrame((state, delta) => {
-    void state;
+    const elapsedTime = state.clock.getElapsedTime();
+    const STABILIZATION_TIME = 45; 
+    const isSimulating = elapsedTime < STABILIZATION_TIME;
+
     const simulationSteps = 5;
     const substepDelta = delta / simulationSteps;
 
-    for (let step = 0; step < simulationSteps; step++) {
-      for (const nodeA of nodes) {
-        force.copy(nodeA.position).multiplyScalar(-0.01); 
-        nodeA.velocity.add(force.multiplyScalar(substepDelta));
+    if (isSimulating) {
+      for (let step = 0; step < simulationSteps; step++) {
+        for (const nodeA of nodes) {
+          force.copy(nodeA.position).multiplyScalar(-0.01); 
+          nodeA.velocity.add(force.multiplyScalar(substepDelta));
 
-        for (const nodeB of nodes) {
-          if (nodeA === nodeB) continue;
-          vecA.copy(nodeA.position);
-          vecB.copy(nodeB.position);
-          const distance = vecA.distanceTo(vecB);
-          
-          const minDistance = nodeA.radius + nodeB.radius + 8; 
-          
-          if (distance < minDistance && distance > 0) {
-            force.subVectors(vecA, vecB).normalize().multiplyScalar(2 * (1 - distance / minDistance));
-            nodeA.velocity.add(force.multiplyScalar(substepDelta));
+          for (const nodeB of nodes) {
+            if (nodeA === nodeB) continue;
+            vecA.copy(nodeA.position);
+            vecB.copy(nodeB.position);
+            const distance = vecA.distanceTo(vecB);
+            
+            const minDistance = nodeA.radius + nodeB.radius + 12; 
+            
+            if (distance < minDistance && distance > 0) {
+              force.subVectors(vecA, vecB).normalize().multiplyScalar(2 * (1 - distance / minDistance));
+              nodeA.velocity.add(force.multiplyScalar(substepDelta));
+            }
           }
         }
+        for (const node of nodes) {
+          node.velocity.multiplyScalar(0.98); 
+          node.position.add(node.velocity.clone().multiplyScalar(substepDelta));
+        }
       }
+    } else {
+
       for (const node of nodes) {
-        node.velocity.multiplyScalar(0.98); 
-        node.position.add(node.velocity.clone().multiplyScalar(substepDelta));
+        node.velocity.set(0, 0, 0);
       }
     }
-
   });
 
   return (

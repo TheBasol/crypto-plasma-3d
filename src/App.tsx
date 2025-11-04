@@ -119,6 +119,9 @@ function App() {
     return intermediate.map(({ crypto, displayChange, sizeRaw, sizeValue }) => {
       const normalized = sizeValue / maxSizeValue; // 0..1
       const radius = MIN_RADIUS + normalized * (MAX_RADIUS - MIN_RADIUS);
+      
+      // Aumentar rango en móvil para mejor espaciado
+      const spreadRange = isMobile ? 35 : 25;
 
       return {
         ...crypto,
@@ -126,7 +129,7 @@ function App() {
         sizeMetric: metric,
         sizeRaw,
         radius: Math.max(MIN_RADIUS, Math.min(MAX_RADIUS, radius)),
-        position: new THREE.Vector3((Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15),
+        position: new THREE.Vector3((Math.random() - 0.5) * spreadRange, (Math.random() - 0.5) * spreadRange, (Math.random() - 0.5) * spreadRange),
         velocity: new THREE.Vector3(0, 0, 0),
         color: getColorFromChange(displayChange),
       };

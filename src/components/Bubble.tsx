@@ -67,12 +67,32 @@ export const Bubble = ({ node, selectedId, onSelect, onHover }: BubbleProps) => 
     }
   });
 
+  const handlePointerDown = (e: any) => {
+    try {
+      if (e.target?.setPointerCapture) {
+        e.target.setPointerCapture(e.pointerId);
+      }
+    } catch {
+    }
+  };
+
+  const handlePointerUp = (e: any) => {
+    try {
+      if (e.target?.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) {
+        e.target.releasePointerCapture(e.pointerId);
+      }
+    } catch {
+    }
+  };
+
   return (
     <mesh
       ref={meshRef}
       onPointerOver={(e) => { e.stopPropagation(); setIsMouseOver(true); onHover(node.id); }}
       onPointerOut={() => { setIsMouseOver(false); onHover(null); }}
       onClick={(e) => { e.stopPropagation(); onSelect(isSelected ? null : node.id); }}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
     >
       <sphereGeometry args={[node.radius, 32, 32]} />
       <meshPhysicalMaterial
