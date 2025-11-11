@@ -16,6 +16,7 @@ const targetScale = new THREE.Vector3();
 export const Bubble = ({ node, selectedId, onSelect, onHover }: BubbleProps) => {
   const meshRef = useRef<THREE.Mesh>(null!);
   const [isMouseOver, setIsMouseOver] = useState(false);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const baseColor = useMemo(() => new THREE.Color(node.color), [node.color]);
   const cloudTexture = useTexture('/textures/cloud.png');
 
@@ -68,29 +69,60 @@ export const Bubble = ({ node, selectedId, onSelect, onHover }: BubbleProps) => 
   });
 
   const handlePointerDown = (e: any) => {
+    e.stopPropagation();
     try {
       if (e.target?.setPointerCapture) {
         e.target.setPointerCapture(e.pointerId);
       }
     } catch {
+      // Ignorar errores de pointer capture
     }
   };
 
   const handlePointerUp = (e: any) => {
+    e.stopPropagation();
     try {
       if (e.target?.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) {
         e.target.releasePointerCapture(e.pointerId);
       }
     } catch {
+      // Ignorar errores de pointer release
     }
+  };
+
+  const handlePointerOver = (e: any) => {
+    e.stopPropagation();
+    // Limpiar timeout anterior si existe
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsMouseOver(true);
+    onHover(node.id);
+  };
+
+  const handlePointerOut = (e: any) => {
+    e.stopPropagation();
+    // Agregar un pequeño delay antes de perder el hover
+    // Esto permite que el mouse pase por el tooltip sin interrupciones
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsMouseOver(false);
+      onHover(null);
+      hoverTimeoutRef.current = null;
+    }, 100); // 100ms de delay
+  };
+
+  const handleClick = (e: any) => {
+    e.stopPropagation();
+    onSelect(isSelected ? null : node.id);
   };
 
   return (
     <mesh
       ref={meshRef}
-      onPointerOver={(e) => { e.stopPropagation(); setIsMouseOver(true); onHover(node.id); }}
-      onPointerOut={() => { setIsMouseOver(false); onHover(null); }}
-      onClick={(e) => { e.stopPropagation(); onSelect(isSelected ? null : node.id); }}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
+      onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
     >
@@ -105,18 +137,30 @@ export const Bubble = ({ node, selectedId, onSelect, onHover }: BubbleProps) => 
         <meshBasicMaterial color={baseColor} toneMapped={false} />
       </mesh>
 
+      {/* Hitbox invisible para mejorar interacción en mobile */}
+      <mesh
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
+        onClick={handleClick}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+      >
+        <sphereGeometry args={[Math.max(node.radius * 0.5, 2.5), 16, 16]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
+
       {isVisible && !hovered && node.radius > 0.5 && (
         <Html center zIndexRange={[100, 0]} style={{ pointerEvents: 'none', whiteSpace: 'nowrap', userSelect: 'none', position: 'relative' }}>
           <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '3px' }}>
             <div style={{
-              color: 'white', fontSize: `${Math.max(8, node.radius * 5)}px`,
+              color: 'white', fontSize: `${Math.max(8, Math.min(18, node.radius * 5))}px`,
               background: 'rgba(0, 0, 0, 0.5)', padding: '2px 6px', borderRadius: '4px',
               textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
             }}>
               {node.symbol.toUpperCase()}
             </div>
             <div style={{ 
-              color: node.color.getStyle(), fontWeight: 'bold', fontSize: `${Math.max(7, node.radius * 4)}px`,
+              color: node.color.getStyle(), fontWeight: 'bold', fontSize: `${Math.max(7, Math.min(14, node.radius * 4))}px`,
               background: 'rgba(0, 0, 0, 0.5)', padding: '1px 5px', borderRadius: '4px',
               textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
             }}>
@@ -129,11 +173,13 @@ export const Bubble = ({ node, selectedId, onSelect, onHover }: BubbleProps) => 
       {isVisible && hovered && (
         <Html distanceFactor={10} zIndexRange={[100, 0]} position={[0, node.radius + 0.5, 0]} style={{ zIndex: 5, position: 'relative' }}>
           {(() => {
-            const TITLE_SCALE = 8; 
-            const BODY_SCALE = 5; 
-            const PADDING_BASE = 12; 
-            const titleSize = Math.max(12, Math.round(node.radius * TITLE_SCALE));
-            const bodySize = Math.max(11, Math.round(node.radius * BODY_SCALE));
+            const TITLE_SCALE = 16; 
+            const BODY_SCALE = 10; 
+            const PADDING_BASE = 12;
+            const MAX_TITLE_SIZE = 42;
+            const MAX_BODY_SIZE = 30;
+            const titleSize = Math.max(12, Math.min(MAX_TITLE_SIZE, Math.round(node.radius * TITLE_SCALE)));
+            const bodySize = Math.max(11, Math.min(MAX_BODY_SIZE, Math.round(node.radius * BODY_SCALE)));
             const padding = Math.max(PADDING_BASE, Math.round(node.radius * 3));
 
             return (
@@ -168,7 +214,7 @@ export const Bubble = ({ node, selectedId, onSelect, onHover }: BubbleProps) => 
                 </div>
 
                 {node.sizeMetric && (
-                  <div style={{ fontSize: `${Math.max(11, Math.round(node.radius * 3.5))}px`, marginTop: 6 }}>
+                  <div style={{ fontSize: `${Math.max(12, Math.min(28, Math.round(node.radius * 5.5)))}px`, marginTop: 6 }}>
                     <strong>Size (by {String(node.sizeMetric)}):</strong>{' '}
                     {node.sizeMetric === 'performance' ? (
                       `${node.sizeRaw > 0 ? '+' : ''}${Number(node.sizeRaw).toFixed(1)}%`

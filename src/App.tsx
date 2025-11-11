@@ -39,17 +39,6 @@ function App() {
   const [isPageLoading, setIsPageLoading] = useState(true);
 
   const isMobile = useIsMobile();
-  const [isUiVisible, setIsUiVisible] = useState(false); // Inicia cerrado
-
-
-
-  useEffect(() => {
-    if (!isMobile) {
-      setIsUiVisible(true);
-    } else {
-      setIsUiVisible(false); 
-    }
-  }, [isMobile]); 
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -194,31 +183,14 @@ function App() {
         </div>
       )}
 
-      {isMobile && !isUiVisible && (
-        <button
-          onClick={() => setIsUiVisible(true)}
-          className="absolute top-4 left-4 z-20 p-2 bg-black/50 backdrop-blur-md rounded-lg text-white animate-pulse"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0M3.75 18H7.5m3-6h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0M3.75 12H7.5" />
-          </svg>
-        </button>
-      )}
-
       <CryptoUI 
         timeframe={timeframe} 
         setTimeframe={setTimeframe} 
         metric={metric} 
         setMetric={setMetric}
-        onSearch={(term) => {
-          handleSearch(term);
-          if (isMobile) setIsUiVisible(false); 
-        }} 
+        onSearch={handleSearch} 
         isLoading={isSearchLoading}
-        // --- Nuevos props ---
-        isVisible={isUiVisible}
         isMobile={isMobile}
-        onClose={() => setIsUiVisible(false)}
       />
       
       {!isPageLoading && nodes.length > 0 && (
